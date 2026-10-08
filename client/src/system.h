@@ -1,9 +1,8 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+#include <time.h>
 #include <stddef.h>
-
-int get_machine_name(char *buffer, size_t size);
 
 #define MACHINE_NAME_SIZE 256
 
@@ -12,5 +11,9 @@ typedef struct {
     const char *eventType;
     int64_t timestamp;
 } LogEvent;
+
+int get_machine_name(char *buffer, size_t size);
+
+int unix_to_utc(int64_t timestamp, struct tm *utc_time);
 
 #endif // SYSTEM_H

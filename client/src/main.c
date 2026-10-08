@@ -8,6 +8,7 @@
 
 int main(void)
 {
+    // Create Startup log event structure and get the hstname and timestamp
     LogEvent event = {
         .hostname = {0},
         .eventType = "Startup",
@@ -19,24 +20,32 @@ int main(void)
         return 1;
     }
 
+    // Convert the timestamp to UTC to 
+    struct tm utc_time;
+
+    if (unix_to_utc(event.timestamp, &utc_time) != 0) {
+        fprintf(stderr, "Erro ao converter timestamp\n");
+        return 1;
+    }
+    // Store the log event in a file
+
     FILE *file = fopen(LOG_FILE, "a");
 
     if (file == NULL) {
         return 1;
     }
 
-    time_t now = time(NULL);
-    struct tm *local = localtime(&now);
-
     fprintf(
         file,
-        "[%04d-%02d-%02d] [%02d:%02d:%02d] Windows Iniciado\n",
-        local->tm_year + 1900,
-        local->tm_mon + 1,
-        local->tm_mday,
-        local->tm_hour,
-        local->tm_min,
-        local->tm_sec
+        "[%04d-%02d-%02d] [%02d:%02d:%02d] %s, Hostname: %s\n",
+        utc_time.tm_year + 1900,
+        utc_time.tm_mon + 1,
+        utc_time.tm_mday,
+        utc_time.tm_hour,
+        utc_time.tm_min,
+        utc_time.tm_sec,
+        event.eventType,
+        event.hostname
     );
 
     fclose(file);
