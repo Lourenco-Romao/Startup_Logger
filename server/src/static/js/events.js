@@ -15,6 +15,31 @@ async function loadEvents() {
     }
 }
 
+function osColor(os) {
+    switch(os) {
+        case ("windows"):
+            return "#0078D4"
+        case ("linux"):
+            return "#F5A623"
+        case ("macos"):
+            return "#A2AAAD"
+        case ("android"):
+            return "#3DDC84"
+        case ("ios"):
+            return "#FF375F"
+        default:
+            return "white"
+    }
+}
+
+function eventTypeColor(eventType) {
+    switch (eventType) {
+        case ("startup"):
+            return "#3DDC84"
+        default:
+            return "white"
+    }
+}
 
 function renderEvents(events) {
     const tableBody = document.getElementById("events-table-body");
@@ -36,10 +61,9 @@ function renderEvents(events) {
         receivedAt = new Date(event["Received At"] * 1000).toLocaleString();
 
         row.innerHTML = `
-            <td>${event.ID}</td>
             <td>${event.Hostname}</td>
-            <td>${event["Event Type"]}</td>
-            <td>${event.OS}</td>
+            <td style="color: ${eventTypeColor(event["Event Type"])}">${event["Event Type"]}</td>
+            <td style="color: ${osColor(event.OS)};">${event.OS}</td>
             <td>${timestamp}</td>
             <td>${receivedAt}</td>
         `;
