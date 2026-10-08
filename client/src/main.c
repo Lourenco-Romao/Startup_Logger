@@ -13,7 +13,8 @@ int main(void)
     LogEvent event = {
         .hostname = {0},
         .eventType = "startup",
-        .timestamp = (int64_t)time(NULL)
+        .timestamp = (int64_t)time(NULL),
+        .os = get_operating_system()
     };
 
     if (get_machine_name(event.hostname, sizeof(event.hostname)) != 0) {

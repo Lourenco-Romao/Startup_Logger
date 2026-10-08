@@ -54,3 +54,18 @@ int unix_to_utc(int64_t timestamp, struct tm *utc_time)
 
     return 0;
 }
+
+const char *get_operating_system(void)
+{
+#if defined(_WIN32)
+    return "windows";
+#elif defined(__ANDROID__)
+    return "android";
+#elif defined(__APPLE__)
+    return "macos";
+#elif defined(__linux__)
+    return "linux";
+#else
+    return "unknown";
+#endif
+}

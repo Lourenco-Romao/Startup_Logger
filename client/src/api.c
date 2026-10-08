@@ -23,10 +23,12 @@ int send_startup_event(const LogEvent *event)
         "{"
             "\"hostname\":\"%s\","
             "\"eventType\":\"%s\","
+            "\"os\":\"%s\","
             "\"timestamp\":%" PRId64
         "}",
         event->hostname,
         event->eventType,
+        event->os,
         event->timestamp
     );
 
