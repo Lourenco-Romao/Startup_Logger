@@ -41,8 +41,8 @@ def create_startup(event: dict):
             detail="Timestamp must include timezone information"
         )
 
-    timestamp = timestamp.astimezone(timezone.utc)
-    received_at = datetime.now(timezone.utc)
+    timestamp = timestamp.astimezone(timezone.utc).replace(tzinfo=None) #timezone UTC sem +00:00
+    received_at = datetime.now(timezone.utc).replace(tzinfo=None)
 
     return {
         "message": "Startup received",
