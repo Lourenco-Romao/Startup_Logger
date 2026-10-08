@@ -9,21 +9,22 @@ app = Flask(__name__)
 def create_startup():
     event = request.get_json(silent=True)
 
-    error = validate_event(event)
+    received_at = int(time.time())
+
+    error = validate_event(event, received_at)
 
     if error is not None:
         return jsonify({
             "error": error
         }), 400
 
-    received_at = int(time.time())
-
     return jsonify({
         "message": "Startup received",
         "hostname": event["hostname"],
         "timestamp": event["timestamp"],
         "received_at": received_at,
-        "eventType": event["eventType"]
+        "eventType": event["eventType"],
+        "os": event["os"]
     }), 201
 
 if __name__ == "__main__":
