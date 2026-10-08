@@ -32,17 +32,23 @@ def create_event():
 
 @app.route("/api/v1/events", methods=["GET"])
 def list_events():
-    events = get_events()
+    os_name = request.args.get("os")
+    hostname = request.args.get("hostname")
+    event_type = request.args.get("eventType")
 
-    if events is None:
-        return jsonify({
-            "error": "Failed to retrieve events from database"
-        }), 500
-    if not events:
-        return jsonify({
-            "message": "No events found"
-        }), 200
-    
+    from_timestamp = request.args.get("from", type=int)
+    to_timestamp = request.args.get("to", type=int)
+    limit = request.args.get("limit", type=int, default=100)
+
+    events = get_events(
+        os_name=os_name,
+        hostname=hostname,
+        event_type=event_type,
+        from_timestamp=from_timestamp,
+        to_timestamp=to_timestamp,
+        limit=limit
+    )
+
     return jsonify(events), 200
 
 

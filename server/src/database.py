@@ -83,11 +83,10 @@ def insert_event(event, received_at):
     cnx.close()
     return True
 
-def get_events():
+def get_events(os_name=None, hostname=None, event_type=None, from_timestamp=None, to_timestamp=None, limit=100):
     cnx = get_connection()
 
-    events = cnx.execute(
-        """
+    query = """
         SELECT
             events.id_events AS 'ID',
             events.hostname AS 'Hostname',
@@ -97,9 +96,32 @@ def get_events():
             os.name AS 'OS'
         FROM events
         JOIN os ON events.os_id = os.id_os
-        ORDER BY events.timestamp DESC
+        WHERE 1=1
         """
-    ).fetchall()
+    params = []
+    
+
+    if os_name is not None:
+        query += " AND os.name = ?"
+        params.append(os_name)
+    if hostname is not None:
+        query += " AND events.hostname = ?"
+        params.append(hostname)
+    if event_type is not None:
+        query += " AND events.event_type = ?"
+        params.append(event_type)
+    if from_timestamp is not None:
+        query += " AND events.timestamp >= ?"
+        params.append(from_timestamp)
+    if to_timestamp is not None:
+        query += " AND events.timestamp <= ?"
+        params.append(to_timestamp)
+
+    query += " ORDER BY events.timestamp DESC"
+    query += " LIMIT ?"
+    params.append(limit)
+
+    events = cnx.execute(query, params).fetchall()
 
     cnx.close()
 
