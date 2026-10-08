@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "system.h"
+#include "api.h"
 
 #define LOG_FILE "./bomdia.log"
 
@@ -49,5 +50,12 @@ int main(void)
     );
 
     fclose(file);
+
+    // Send the log event to the server
+    if (send_startup_event(&event) != 0) {
+        fprintf(stderr, "Erro ao enviar evento para API\n");
+        return 1;
+    }
+
     return 0;
 }
