@@ -1,10 +1,18 @@
 #include <stdio.h>
 #include <time.h>
+#include <stdint.h>
+
+#include "system.h"
 
 #define LOG_FILE "./bomdia.log"
 
 int main(void)
 {
+    LogEvent event = {
+        .machine = "",
+        .eventType = "Startup",
+        .timestamp = (int64_t)time(NULL)
+    };
 
     FILE *file = fopen(LOG_FILE, "a");
 
