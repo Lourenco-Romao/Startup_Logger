@@ -88,12 +88,12 @@ def get_events(os_name=None, hostname=None, event_type=None, from_timestamp=None
 
     query = """
         SELECT
-            events.id_events AS 'ID',
-            events.hostname AS 'Hostname',
-            events.event_type AS 'Event Type',
-            events.timestamp AS 'Timestamp',
-            events.received_at AS 'Received At',
-            os.name AS 'OS'
+            events.id_events AS idEvents,
+            events.hostname AS hostname,
+            events.event_type AS eventType,
+            events.timestamp AS timestamp,
+            events.received_at AS receivedAt,
+            os.name AS os
         FROM events
         JOIN os ON events.os_id = os.id_os
         WHERE 1=1

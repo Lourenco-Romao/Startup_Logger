@@ -57,13 +57,13 @@ function renderEvents(events) {
     events.forEach(event => {
         const row = document.createElement("tr");
 
-        timestamp = new Date(event.Timestamp * 1000).toLocaleString();
-        receivedAt = new Date(event["Received At"] * 1000).toLocaleString();
+        timestamp = new Date(event.timestamp * 1000).toLocaleString();
+        receivedAt = new Date(event.receivedAt * 1000).toLocaleString();
 
         row.innerHTML = `
-            <td>${event.Hostname}</td>
-            <td style="color: ${eventTypeColor(event["Event Type"])}">${event["Event Type"]}</td>
-            <td style="color: ${osColor(event.OS)};">${event.OS}</td>
+            <td>${event.hostname}</td>
+            <td style="color: ${eventTypeColor(event.eventType)}">${event.eventType}</td>
+            <td style="color: ${osColor(event.os)};">${event.os}</td>
             <td>${timestamp}</td>
             <td>${receivedAt}</td>
         `;
