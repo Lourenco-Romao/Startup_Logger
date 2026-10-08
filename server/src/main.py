@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import time
 
 from validation import validate_event
@@ -50,6 +50,10 @@ def list_events():
     )
 
     return jsonify(events), 200
+
+@app.route("/events", methods=["GET"])
+def events_page():
+    return render_template("events.html")
 
 
 if __name__ == "__main__":

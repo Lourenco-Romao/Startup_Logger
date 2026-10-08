@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Startup Logger - Events</title>
+</head>
+
+<body>
+    <h1>Events</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Hostname</th>
+                <th>Event Type</th>
+                <th>Timestamp</th>
+                <th>Received At</th>
+                <th>OS</th>
+            </tr>
+        </thead>
+
+        <tbody id="events-table-body">
+        </tbody>
+    </table>
+
+    <script src="{{ url_for('static', filename='js/events.js') }}"></script>
+</body>
+</html>
