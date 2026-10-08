@@ -9,10 +9,15 @@
 int main(void)
 {
     LogEvent event = {
-        .machine = "",
+        .hostname = {0},
         .eventType = "Startup",
         .timestamp = (int64_t)time(NULL)
     };
+
+    if (get_machine_name(event.hostname, sizeof(event.hostname)) != 0) {
+        fprintf(stderr, "Erro ao obter o nome da maquina\n");
+        return 1;
+    }
 
     FILE *file = fopen(LOG_FILE, "a");
 
