@@ -6,6 +6,7 @@ DATABASE = "startup_logger.db"
 def get_connection():
     cnx = sqlite3.connect(DATABASE)
     cnx.execute("PRAGMA foreign_keys = ON")
+    cnx.row_factory = sqlite3.Row
     return cnx
 
 def init_database():
@@ -82,4 +83,24 @@ def insert_event(event, received_at):
     cnx.close()
     return True
 
-init_database()
+def get_events():
+    cnx = get_connection()
+
+    events = cnx.execute(
+        """
+        SELECT
+            events.id_events AS 'ID',
+            events.hostname AS 'Hostname',
+            events.event_type AS 'Event Type',
+            events.timestamp AS 'Timestamp',
+            events.received_at AS 'Received At',
+            os.name AS 'OS'
+        FROM events
+        JOIN os ON events.os_id = os.id_os
+        ORDER BY events.timestamp DESC
+        """
+    ).fetchall()
+
+    cnx.close()
+
+    return [dict(row) for row in events]

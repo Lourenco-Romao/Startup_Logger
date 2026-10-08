@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import time
 
 from validation import validate_event
-from database import insert_event
+from database import insert_event, get_events
 
 app = Flask(__name__)
 
@@ -28,6 +28,23 @@ def create_event():
         "message": "Event received and stored successfully",
         "received_at": received_at
     }), 201
+
+
+@app.route("/api/v1/events", methods=["GET"])
+def list_events():
+    events = get_events()
+
+    if events is None:
+        return jsonify({
+            "error": "Failed to retrieve events from database"
+        }), 500
+    if not events:
+        return jsonify({
+            "message": "No events found"
+        }), 200
+    
+    return jsonify(events), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True)
