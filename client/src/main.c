@@ -11,7 +11,7 @@ int main(void)
     // Create Startup log event structure and get the hstname and timestamp
     LogEvent event = {
         .hostname = {0},
-        .eventType = "Startup",
+        .eventType = "startup",
         .timestamp = (int64_t)time(NULL)
     };
 

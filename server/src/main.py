@@ -1,64 +1,78 @@
 from fastapi import FastAPI, HTTPException
-from datetime import datetime, timezone
+import time
 
 app = FastAPI()
 
+valid_event_types = {"startup"}
+
+APPLICATION_CREATED_AT = 1791471878 # This is a Unix timestamp that is the limit for the timestamp received in the request. It represents the date the application was created. Any timestamp before this date will be considered invalid.
 
 @app.post("/api/v1/startups", status_code=201)
 def create_startup(event: dict):
-    if "machine_id" not in event or "timestamp" not in event:
+    if "hostname" not in event or "timestamp" not in event or "eventType" not in event:
         raise HTTPException(
             status_code=400,
-            detail="Missing required fields: machine_id or timestamp"
+            detail="Missing required fields: hostname or timestamp or eventType"
         )
 
-    if not isinstance(event["machine_id"], str):
+    if not isinstance(event["eventType"], str):
         raise HTTPException(
             status_code=400,
-            detail="Invalid data type for machine_id"
+            detail="Invalid data type for eventType"
         )
 
-    if not event["machine_id"].strip():
+    event["eventType"] = event["eventType"].lower()
+
+    if event["eventType"] not in valid_event_types:
         raise HTTPException(
             status_code=400,
-            detail="machine_id cannot be empty"
+            detail=f"Invalid eventType. Must be one of: {', '.join(valid_event_types)}"
         )
 
-    if len(event["machine_id"]) > 255:
+    if not isinstance(event["hostname"], str):
         raise HTTPException(
             status_code=400,
-            detail="machine_id is too long"
+            detail="Invalid data type for hostname"
         )
 
-    if not isinstance(event["timestamp"], str):
+    event["hostname"] = event["hostname"].strip()
+
+    if not event["hostname"]:
+        raise HTTPException(
+            status_code=400,
+            detail="hostname cannot be empty"
+        )
+
+    if len(event["hostname"]) > 255:
+        raise HTTPException(
+            status_code=400,
+            detail="hostname is too long"
+        )
+
+    if not isinstance(event["timestamp"], int):
         raise HTTPException(
             status_code=400,
             detail="Invalid data type for timestamp"
         )
+    
+    received_at = int(time.time())
 
-    try:
-        timestamp = datetime.fromisoformat(
-            event["timestamp"].replace("Z", "+00:00")
-        )
-
-    except ValueError:
+    if event["timestamp"] > received_at + 300:
         raise HTTPException(
             status_code=400,
-            detail="Invalid ISO 8601 timestamp"
+            detail="timestamp can not be in the future"
         )
-
-    if timestamp.tzinfo is None:
+    
+    if event["timestamp"] < APPLICATION_CREATED_AT:
         raise HTTPException(
             status_code=400,
-            detail="Timestamp must include timezone information"
+            detail="timestamp predates application creation"
         )
-
-    timestamp = int(timestamp.timestamp())
-    received_at = int(datetime.now(timezone.utc).timestamp())
 
     return {
         "message": "Startup received",
-        "machine_id": event["machine_id"],
-        "timestamp": timestamp,
+        "hostname": event["hostname"],
+        "timestamp": event["timestamp"],
         "received_at": received_at,
+        "eventType": event["eventType"]
     }
