@@ -1,3 +1,17 @@
-programa
+# Python
+.venv/
+__pycache__/
+*.pyc
 
-.venv
+# Environment variables
+.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# C build
+client/build/
+*.exe
+*.o
