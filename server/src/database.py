@@ -49,7 +49,7 @@ def init_database():
     cnx.commit()
     cnx.close()
 
-def insert_event(event):
+def insert_event(event, received_at):
     cnx = get_connection()
 
     os_name = event["os"].lower()
@@ -73,7 +73,7 @@ def insert_event(event):
             event["hostname"],
             event["eventType"],
             event["timestamp"],
-            event["received_at"],
+            received_at,
             os_id
         )
     )
