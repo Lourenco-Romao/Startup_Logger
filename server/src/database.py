@@ -52,7 +52,7 @@ def init_database():
 def insert_event(event, received_at):
     cnx = get_connection()
 
-    os_name = event["os"].lower()
+    os_name = event["os"]
     os_id = cnx.execute(
         "SELECT id_os FROM os WHERE name = ?",
         (os_name,)

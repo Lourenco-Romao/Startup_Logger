@@ -16,7 +16,7 @@ def validate_event(event, received_at):
     if not isinstance(event["os"], str):
         return "Invalid data type for OS"
 
-    event["os"] = event["os"].lower()
+    event["os"] = event["os"].strip().lower()
 
     if event["os"] not in VALID_OS:
         return (
@@ -27,7 +27,7 @@ def validate_event(event, received_at):
     if not isinstance(event["eventType"], str):
         return "Invalid data type for eventType"
 
-    event["eventType"] = event["eventType"].lower()
+    event["eventType"] = event["eventType"].strip().lower()
 
     if event["eventType"] not in VALID_EVENT_TYPES:
         return (
