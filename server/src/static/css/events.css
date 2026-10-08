@@ -25,6 +25,9 @@
     padding: 0;
 }
 
+[hidden] {
+    display: none !important; 
+}
 
 body {
     min-height: 100vh;
@@ -258,6 +261,42 @@ button:active {
 
     background: var(--surface-hover);
     color: var(--text);
+}
+
+/* SPINNER LOADING */
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    padding: 60px 20px;
+
+    border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius) var(--radius);
+
+    background: rgba(17, 17, 19, 0.92);
+
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 

@@ -9,6 +9,8 @@ async function loadEvents() {
         const events = await response.json();
 
         renderEvents(events);
+        document.getElementById("loading").hidden = true;
+        document.getElementById("table-container").hidden = false;
 
     } catch (error) {
         console.error("Failed to load events:", error);
@@ -92,7 +94,7 @@ function renderEvents(events) {
 
         row.innerHTML = `
             <td>${event.hostname}</td>
-            <td style="color: ${eventTypeColor(event.eventType)}">${event.eventType}</td>
+            <td style="color: ${eventTypeColor(event.eventType)};">${event.eventType}</td>
             <td style="color: ${osColor(event.os)};">${event.os}</td>
             <td>${timestamp}</td>
             <td>${receivedAt}</td>
@@ -100,6 +102,7 @@ function renderEvents(events) {
 
         tableBody.appendChild(row);
     });
+
 }
 
 window.addEventListener("DOMContentLoaded", loadEvents);
