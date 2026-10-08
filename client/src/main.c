@@ -37,15 +37,15 @@ int main(void)
 
     fprintf(
         file,
-        "[%04d-%02d-%02d] [%02d:%02d:%02d] %s, Hostname: %s\n",
+        "[%04d-%02d-%02d] [%02d:%02d:%02d] [%s] %s\n",
         utc_time.tm_year + 1900,
         utc_time.tm_mon + 1,
         utc_time.tm_mday,
         utc_time.tm_hour,
         utc_time.tm_min,
         utc_time.tm_sec,
-        event.eventType,
-        event.hostname
+        event.hostname,
+        event.eventType
     );
 
     fclose(file);
