@@ -41,6 +41,34 @@ function eventTypeColor(eventType) {
     }
 }
 
+function formatDelay(seconds) {
+    if (seconds < 0) {
+        return `${seconds}s`
+    }
+    if (seconds < 60) {
+        return `+${seconds}s`;
+    }
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (seconds < 3600) {
+        return `+${minutes}m ${remainingSeconds}s`;
+    }
+
+    const hours = Math.floor(seconds / 3600);
+    const remainingMinutes = Math.floor((seconds % 3600) / 60);
+
+    if (seconds < 86400) {
+        return `+${hours}h ${remainingMinutes}m ${remainingSeconds}s`;
+    }
+
+    const days = Math.floor(seconds / 86400);
+    const remainingHours = Math.floor((seconds % 86400) / 3600);
+
+    return `+${days}d ${remainingHours}h ${remainingMinutes}m`;
+}
+
 function renderEvents(events) {
     const tableBody = document.getElementById("events-table-body");
     const emptyState = document.getElementById("empty-state");
@@ -57,8 +85,10 @@ function renderEvents(events) {
     events.forEach(event => {
         const row = document.createElement("tr");
 
-        timestamp = new Date(event.timestamp * 1000).toLocaleString();
-        receivedAt = new Date(event.receivedAt * 1000).toLocaleString();
+        const timestamp = new Date(event.timestamp * 1000).toLocaleString();
+
+        const delay = event.receivedAt - event.timestamp;
+        const receivedAt = formatDelay(delay)
 
         row.innerHTML = `
             <td>${event.hostname}</td>
