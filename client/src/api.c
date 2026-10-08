@@ -1,0 +1,92 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <curl/curl.h>
+
+#include "api.h"
+
+#define API_URL "http://127.0.0.1:8000/api/v1/startups"
+
+int send_startup_event(const LogEvent *event)
+{
+    CURL *curl = NULL;
+    struct curl_slist *headers = NULL;
+
+    char json[512];
+
+    CURLcode result;
+    long status_code;
+
+    int written = snprintf(
+        json,
+        sizeof(json),
+        "{"
+            "\"hostname\":\"%s\","
+            "\"eventType\":\"%s\","
+            "\"timestamp\":%s" PRId64
+        "}",
+        event->hostname,
+        event->eventType,
+        event->timestamp
+    );
+
+    if (written < 0 || (size_t)written >= sizeof(json)) {
+        return -1;
+    }
+
+    curl = curl_easy_init();
+
+    if (curl == NULL) {
+        return -1;
+    }
+
+    headers = curl_slist_append(
+        headers,
+        "Content-Type: application/json"
+    );
+
+    if (headers == NULL) {
+        curl_easy_cleanup(curl);
+        return -1;
+    }
+
+    curl_easy_setopt(curl, CURLOPT_URL, API_URL);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json);
+
+    result = curl_easy_perform(curl);
+
+    if (result != CURLE_OK) {
+        fprintf(
+            stderr,
+            "Erro CURL: %s\n",
+            curl_easy_strerror(result)
+        );
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        return -1;
+    }
+
+    curl_easy_getinfo(
+        curl,
+        CURLINFO_RESPONSE_CODE,
+        &status_code
+    );
+
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+
+    if (status_code != 201) {
+        fprintf(
+            stderr,
+            "API respondeu HTTP %ld\n",
+            status_code
+        );
+
+        return -1;
+    }
+
+    return 0;
+}
