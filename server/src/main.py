@@ -1,11 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
 
 app = FastAPI()
 
-
-PORTUGAL_TZ = ZoneInfo("Europe/Lisbon")
 
 @app.post("/api/v1/startups", status_code=201)
 def create_startup(event: dict):
@@ -38,8 +35,14 @@ def create_startup(event: dict):
             detail="Invalid timestamp format, expected ISO 8601 format (YYYY-MM-DDTHH:MM:SSZ)"
         )
 
-    timestamp = timestamp.astimezone(PORTUGAL_TZ)
-    received_at = datetime.now(PORTUGAL_TZ)
+    if timestamp.tzinfo is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Timestamp must include timezone information"
+        )
+
+    timestamp = timestamp.astimezone(timezone.utc)
+    received_at = datetime.now(timezone.utc)
 
     return {
         "message": "Startup received",
