@@ -12,10 +12,22 @@ def create_startup(event: dict):
             detail="Missing required fields: machine_id or timestamp"
         )
 
-    elif not isinstance(event["machine_id"], str):
+    if not isinstance(event["machine_id"], str):
         raise HTTPException(
             status_code=400,
             detail="Invalid data type for machine_id"
+        )
+
+    if not event["machine_id"].strip():
+        raise HTTPException(
+            status_code=400,
+            detail="machine_id cannot be empty"
+        )
+
+    if len(event["machine_id"]) > 255:
+        raise HTTPException(
+            status_code=400,
+            detail="machine_id is too long"
         )
 
     if not isinstance(event["timestamp"], str):
@@ -32,7 +44,7 @@ def create_startup(event: dict):
     except ValueError:
         raise HTTPException(
             status_code=400,
-            detail="Invalid timestamp format, expected ISO 8601 format (YYYY-MM-DDTHH:MM:SSZ)"
+            detail="Invalid ISO 8601 timestamp"
         )
 
     if timestamp.tzinfo is None:
@@ -41,12 +53,12 @@ def create_startup(event: dict):
             detail="Timestamp must include timezone information"
         )
 
-    timestamp = timestamp.astimezone(timezone.utc).replace(tzinfo=None) #timezone UTC sem +00:00
-    received_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    timestamp = int(timestamp.timestamp())
+    received_at = int(datetime.now(timezone.utc).timestamp())
 
     return {
         "message": "Startup received",
         "machine_id": event["machine_id"],
         "timestamp": timestamp,
-        "received_at": received_at
+        "received_at": received_at,
     }
