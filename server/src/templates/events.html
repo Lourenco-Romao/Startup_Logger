@@ -3,29 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Startup Logger - Events</title>
+    <title>Startup Logger</title>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/events.css') }}"
+    >
 </head>
-
 <body>
-    <h1>Events</h1>
+    <main class="container">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">SYSTEM MONITOR</p>
+                <h1>Startup Logger</h1>
+                <p class="subtitle">
+                    Monitor and explore system startup events.
+                </p>
+            </div>
+        </header>
+        <div class="filters">
+            <div class="filter-group">
+                <label for="hostname-filter">Hostname</label>
+                <input
+                    id="hostname-filter"
+                    type="text"
+                    placeholder="e.g. DESKTOP-01"
+                >
+            </div>
+            <div class="filter-group">
+                <label for="os-filter">Operating system</label>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Hostname</th>
-                <th>Event Type</th>
-                <th>Timestamp</th>
-                <th>Received At</th>
-                <th>OS</th>
-            </tr>
-        </thead>
+                <select id="os-filter">
+                    <option value="">All systems</option>
+                    <option value="windows">Windows</option>
+                    <option value="linux">Linux</option>
+                    <option value="macos">macOS</option>
+                    <option value="android">Android</option>
+                    <option value="ios">iOS</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="event-filter">Event type</label>
+                <select id="event-filter">
+                    <option value="">All events</option>
+                    <option value="startup">Startup</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="from-filter">From</label>
+                <input
+                    id="from-filter"
+                    type="datetime-local"
+                >
+            </div>
+            <div class="filter-group">
+                <label for="to-filter">To</label>
 
-        <tbody id="events-table-body">
-        </tbody>
-    </table>
-
+                <input
+                    id="to-filter"
+                    type="datetime-local"
+                >
+            </div>
+            <div class="filter-actions">
+                <button
+                    id="clear-filters"
+                    class="secondary-button"
+                    type="button"
+                >
+                    Clear
+                </button>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Hostname</th>
+                        <th>Event Type</th>
+                        <th>Operating System</th>
+                        <th>Timestamp</th>
+                        <th>Received At</th>
+                    </tr>
+                </thead>
+                <tbody id="events-table-body">
+                </tbody>
+            </table>
+        </div>
+        <div
+            id="empty-state"
+            class="empty-state"
+            hidden
+        >
+            <h3>No events found</h3>
+            <p>
+                No events match the selected filters.
+            </p>
+        </div>
+        <footer>
+            Startup Logger
+        </footer>
+    </main>
     <script src="{{ url_for('static', filename='js/events.js') }}"></script>
 </body>
 </html>

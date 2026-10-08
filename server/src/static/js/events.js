@@ -8,29 +8,44 @@ async function loadEvents() {
 
         const events = await response.json();
 
-        const tableBody = document.getElementById("events-table-body");
-
-        tableBody.innerHTML = "";
-
-        for (const event of events) {
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-                <td>${event.ID}</td>
-                <td>${event.Hostname}</td>
-                <td>${event["Event Type"]}</td>
-                <td>${event.Timestamp}</td>
-                <td>${event["Received At"]}</td>
-                <td>${event.OS}</td>
-            `;
-
-            tableBody.appendChild(row);
-        }
+        renderEvents(events);
 
     } catch (error) {
         console.error("Failed to load events:", error);
     }
 }
 
-loadEvents();
+
+function renderEvents(events) {
+    const tableBody = document.getElementById("events-table-body");
+    const emptyState = document.getElementById("empty-state");
+
+    tableBody.innerHTML = "";
+
+    if (events.length === 0) {
+        emptyState.hidden = false;
+        return;
+    }
+
+    emptyState.hidden = true;
+
+    events.forEach(event => {
+        const row = document.createElement("tr");
+
+        timestamp = new Date(event.Timestamp * 1000).toLocaleString();
+        receivedAt = new Date(event["Received At"] * 1000).toLocaleString();
+
+        row.innerHTML = `
+            <td>${event.ID}</td>
+            <td>${event.Hostname}</td>
+            <td>${event["Event Type"]}</td>
+            <td>${event.OS}</td>
+            <td>${timestamp}</td>
+            <td>${receivedAt}</td>
+        `;
+
+        tableBody.appendChild(row);
+    });
+}
+
 window.addEventListener("DOMContentLoaded", loadEvents);
