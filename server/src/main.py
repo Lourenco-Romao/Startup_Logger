@@ -1,78 +1,76 @@
-from fastapi import FastAPI, HTTPException
+from flask import Flask, request, jsonify
 import time
 
-app = FastAPI()
+app = Flask(__name__)
 
 valid_event_types = {"startup"}
 
 APPLICATION_CREATED_AT = 1791471878 # This is a Unix timestamp that is the limit for the timestamp received in the request. It represents the date the application was created. Any timestamp before this date will be considered invalid.
 
-@app.post("/api/v1/startups", status_code=201)
-def create_startup(event: dict):
+@app.route("/api/v1/startups", methods=["POST"])
+def create_startup():
+    event = request.get_json(silent=True)
+
+    if event is None:
+        return jsonify({
+            "error": "Request body must contain valid JSON"
+        }), 400
+    
     if "hostname" not in event or "timestamp" not in event or "eventType" not in event:
-        raise HTTPException(
-            status_code=400,
-            detail="Missing required fields: hostname or timestamp or eventType"
-        )
+        return jsonify({
+            "error": "Missing required fields: hostname or timestamp or eventType"
+        }), 400
 
     if not isinstance(event["eventType"], str):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid data type for eventType"
-        )
+        return jsonify({
+            "error": "Invalid data type for eventType"
+        }), 400
 
     event["eventType"] = event["eventType"].lower()
 
     if event["eventType"] not in valid_event_types:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid eventType. Must be one of: {', '.join(valid_event_types)}"
-        )
+        return jsonify({
+            "error": f"Invalid eventType. Must be one of: {', '.join(valid_event_types)}"
+        }), 400
 
     if not isinstance(event["hostname"], str):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid data type for hostname"
-        )
+        return jsonify({
+            "error": "Invalid data type for hostname"
+        }), 400
 
     event["hostname"] = event["hostname"].strip()
 
     if not event["hostname"]:
-        raise HTTPException(
-            status_code=400,
-            detail="hostname cannot be empty"
-        )
+        return jsonify({
+            "error": "hostname cannot be empty"
+        }), 400
 
     if len(event["hostname"]) > 255:
-        raise HTTPException(
-            status_code=400,
-            detail="hostname is too long"
-        )
+        return jsonify({
+            "error": "hostname is too long"
+        }), 400
 
-    if not isinstance(event["timestamp"], int):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid data type for timestamp"
-        )
-    
+    if type(event["timestamp"]) is not int:
+        return jsonify({
+            "error": "Invalid data type for timestamp"
+        }), 400
+        
     received_at = int(time.time())
 
     if event["timestamp"] > received_at + 300:
-        raise HTTPException(
-            status_code=400,
-            detail="timestamp can not be in the future"
-        )
+        return jsonify({
+            "error": "timestamp can not be in the future"
+        }), 400
     
     if event["timestamp"] < APPLICATION_CREATED_AT:
-        raise HTTPException(
-            status_code=400,
-            detail="timestamp predates application creation"
-        )
+        return jsonify({
+            "error": "timestamp predates application creation"
+        }), 400
 
-    return {
+    return jsonify({
         "message": "Startup received",
         "hostname": event["hostname"],
         "timestamp": event["timestamp"],
         "received_at": received_at,
         "eventType": event["eventType"]
-    }
+    }), 201
