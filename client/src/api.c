@@ -5,7 +5,11 @@
 
 #include "api.h"
 
-#define API_URL "http://127.0.0.1:5000/api/v1/events"
+#ifndef API_BASE_URL
+#define API_BASE_URL "http://localhost"
+#endif
+
+#define EVENTS_ENDPOINT API_BASE_URL "/api/v1/events"
 
 int send_startup_event(const LogEvent *event)
 {
@@ -52,7 +56,7 @@ int send_startup_event(const LogEvent *event)
         return -1;
     }
 
-    curl_easy_setopt(curl, CURLOPT_URL, API_URL);
+    curl_easy_setopt(curl, CURLOPT_URL, EVENTS_ENDPOINT);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json);
 
