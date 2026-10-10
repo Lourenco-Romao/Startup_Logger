@@ -105,8 +105,8 @@ def get_events(os_name=None, hostname=None, event_type=None, from_timestamp=None
         query += " AND os.name = ?"
         params.append(os_name)
     if hostname is not None:
-        query += " AND events.hostname = ?"
-        params.append(hostname)
+        query += " AND events.hostname LIKE ?"
+        params.append(f"%{hostname}%")
     if event_type is not None:
         query += " AND events.event_type = ?"
         params.append(event_type)
