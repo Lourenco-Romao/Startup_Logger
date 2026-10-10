@@ -1,1 +1,0 @@
-gcc ./client/src/main.c ./client/src/system.c ./client/src/api.c -o "programa.o" $(pkg-config --cflags --libs libcurl)
