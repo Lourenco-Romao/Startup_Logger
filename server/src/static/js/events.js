@@ -111,13 +111,13 @@ function renderEvents(events) {
 
 }
 
-function getFilters() {
-    const hostnameFilter = document.getElementById("hostname-filter");
-    const osFilter = document.getElementById("os-filter");
-    const eventFilter = document.getElementById("event-filter");
-    const fromFilter = document.getElementById("from-filter");
-    const toFilter = document.getElementById("to-filter");
+const hostnameFilter = document.getElementById("hostname-filter");
+const osFilter = document.getElementById("os-filter");
+const eventFilter = document.getElementById("event-filter");
+const fromFilter = document.getElementById("from-filter");
+const toFilter = document.getElementById("to-filter");
 
+function getFilters() {
     const params = new URLSearchParams();
 
     if (hostnameFilter.value) {
@@ -153,7 +153,7 @@ function getFilters() {
 
 let hostnameTimeout;
 
-document.getElementById("hostname-filter").addEventListener("input", () => {
+hostnameFilter.addEventListener("input", () => {
     clearTimeout(hostnameTimeout);
 
     hostnameTimeout = setTimeout(() => {
@@ -162,22 +162,34 @@ document.getElementById("hostname-filter").addEventListener("input", () => {
 });
 
 
-document.getElementById("os-filter").addEventListener("change", () => {
+osFilter.addEventListener("change", () => {
     loadEvents(getFilters());
 });
 
-document.getElementById("event-filter").addEventListener("change", () => {
+eventFilter.addEventListener("change", () => {
     loadEvents(getFilters());
 });
 
-document.getElementById("from-filter").addEventListener("change", () => {
+fromFilter.addEventListener("change", () => {
     loadEvents(getFilters());
 });
 
-document.getElementById("to-filter").addEventListener("change", () => {
+toFilter.addEventListener("change", () => {
     loadEvents(getFilters());
 });
 
 window.addEventListener("DOMContentLoaded", () => {
     loadEvents(getFilters());
 });
+
+function clearFilters() {
+    hostnameFilter.value = "";
+    osFilter.value = "";
+    eventFilter.value = "";
+    fromFilter.value = "";
+    toFilter.value = "";
+
+    loadEvents();
+}
+
+document.getElementById("clear-filters").addEventListener("click", clearFilters);
