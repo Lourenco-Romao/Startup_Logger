@@ -1,6 +1,14 @@
 import sqlite3
+import os
 
-DATABASE = "startup_logger.db"
+from pathlib import Path
+from dotenv import load_dotenv
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+
+load_dotenv(ROOT_DIR / ".env")
+
+DATABASE = ROOT_DIR / os.getenv("DATABASE_PATH")
 
 
 def get_connection():
