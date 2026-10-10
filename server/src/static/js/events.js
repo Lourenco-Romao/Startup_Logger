@@ -1,6 +1,12 @@
-async function loadEvents() {
+async function loadEvents(urlParams="") {
+    let url = "/api/v1/events";
+
+    if (urlParams) url += "?" + urlParams;
+
+    console.log(url)
+
     try {
-        const response = await fetch("/api/v1/events");
+        const response = await fetch(url);
 
         if (!response.ok) {
             throw new Error(`HTTP error: ${response.status}`);
@@ -105,4 +111,73 @@ function renderEvents(events) {
 
 }
 
-window.addEventListener("DOMContentLoaded", loadEvents);
+function getFilters() {
+    const hostnameFilter = document.getElementById("hostname-filter");
+    const osFilter = document.getElementById("os-filter");
+    const eventFilter = document.getElementById("event-filter");
+    const fromFilter = document.getElementById("from-filter");
+    const toFilter = document.getElementById("to-filter");
+
+    const params = new URLSearchParams();
+
+    if (hostnameFilter.value) {
+        params.append("hostname", hostnameFilter.value);
+    }
+
+    if (osFilter.value) {
+        params.append("os", osFilter.value);
+    }
+
+    if (eventFilter.value) {
+        params.append("eventType", eventFilter.value);
+    }
+
+    if (fromFilter.value) {
+        const timestamp = Math.floor(
+            new Date(fromFilter.value).getTime() / 1000
+        );
+
+        params.append("from", timestamp);
+    }
+
+    if (toFilter.value) {
+        const timestamp = Math.floor(
+            new Date(toFilter.value).getTime() / 1000
+        );
+
+        params.append("to", timestamp);
+    }
+
+    return params.toString();
+}
+
+let hostnameTimeout;
+
+document.getElementById("hostname-filter").addEventListener("input", () => {
+    clearTimeout(hostnameTimeout);
+
+    hostnameTimeout = setTimeout(() => {
+        loadEvents(getFilters());
+    }, 300);
+});
+
+
+document.getElementById("os-filter").addEventListener("change", () => {
+    loadEvents(getFilters());
+});
+
+document.getElementById("event-filter").addEventListener("change", () => {
+    loadEvents(getFilters());
+});
+
+document.getElementById("from-filter").addEventListener("change", () => {
+    loadEvents(getFilters());
+});
+
+document.getElementById("to-filter").addEventListener("change", () => {
+    loadEvents(getFilters());
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+    loadEvents(getFilters());
+});
