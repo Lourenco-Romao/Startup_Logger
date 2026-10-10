@@ -3,8 +3,6 @@ async function loadEvents(urlParams="") {
 
     if (urlParams) url += "?" + urlParams;
 
-    console.log(url)
-
     try {
         const response = await fetch(url);
 
