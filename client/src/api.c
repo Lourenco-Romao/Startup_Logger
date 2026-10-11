@@ -40,7 +40,7 @@ int send_startup_event(const LogEvent *event)
 SendResult send_json(const char *json)
 {
     if (json == NULL) {
-        return 1;
+        return SEND_RETRY;
     }
 
     CURL *curl = NULL;
@@ -52,7 +52,7 @@ SendResult send_json(const char *json)
     curl = curl_easy_init();
 
     if (curl == NULL) {
-        return 1;
+        return SEND_RETRY;
     }
 
     headers = curl_slist_append(
@@ -62,12 +62,18 @@ SendResult send_json(const char *json)
 
     if (headers == NULL) {
         curl_easy_cleanup(curl);
-        return 1;
+        return SEND_RETRY;
     }
 
     curl_easy_setopt(curl, CURLOPT_URL, EVENTS_ENDPOINT);
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json);
+
+    // Maximum time allowed to establish the connection
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
+
+    // Maximum time allowed for the entire request
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15L);
 
     result = curl_easy_perform(curl);
 
