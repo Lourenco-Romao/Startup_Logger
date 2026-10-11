@@ -37,7 +37,7 @@ int send_startup_event(const LogEvent *event)
     return send_json(json);
 }
 
-int send_json(const char *json)
+SendResult send_json(const char *json)
 {
     if (json == NULL) {
         return 1;
@@ -81,7 +81,7 @@ int send_json(const char *json)
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
-        return 1;
+        return SEND_RETRY;
     }
 
     curl_easy_getinfo(
@@ -93,15 +93,19 @@ int send_json(const char *json)
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
 
-    if (status_code != 201) {
+    if (status_code == 201) {
+        return SEND_OK;
+    }
+
+    if (status_code >= 400 && status_code < 500) {
         fprintf(
             stderr,
-            "API respondeu HTTP %ld\n",
+            "Event rejected by API: HTTP %ld\n",
             status_code
         );
 
-        return 1;
+        return SEND_REJECTED;
     }
 
-    return 0;
+    return SEND_RETRY;
 }

@@ -117,7 +117,7 @@ int process_pending_events(const char *path) {
     FILE *pending = fopen(path, "r");
 
     if (pending == NULL) {
-        // If pending.log doesnt exist, we dont have anyting to send
+        // If pending.log doesn't exist, there is nothing to send
         return 0;
     }
 
@@ -147,8 +147,8 @@ int process_pending_events(const char *path) {
 
     while (fgets(line, sizeof(line), pending) != NULL) {
         /*
-         * If there was a error
-         * we wont try to send the rest.
+         * If a temporary error already occurred,
+         * keep the remaining events without trying to send them.
          */
         if (send_failed) {
             if (fputs(line, temp) == EOF) {
@@ -158,8 +158,34 @@ int process_pending_events(const char *path) {
             }
             continue;
         }
-        if (send_json(line) != 0) {
+        SendResult result = send_json(line);
+
+        if (result == SEND_OK) {
+            /*
+             * Event was successfully sent.
+             * Do not copy it to the temporary file.
+             */
+            continue;
+        }
+        if (result == SEND_REJECTED) {
+            /*
+             * The server rejected the event (HTTP 400).
+             * Do not keep it because retrying would fail again.
+             */
+            fprintf(
+                stderr,
+                "Discarding invalid pending event: %s",
+                line
+            );
+            continue;
+        }
+        if (result == SEND_RETRY) {
+            /*
+             * A temporary error occurred.
+             * Keep this event and stop trying the remaining ones.
+             */
             send_failed = 1;
+
             if (fputs(line, temp) == EOF) {
                 fclose(pending);
                 fclose(temp);
@@ -167,19 +193,22 @@ int process_pending_events(const char *path) {
             }
         }
     }
+
     if (ferror(pending)) {
         fclose(pending);
         fclose(temp);
         return 1;
     }
+
     if (fclose(pending) != 0) {
         fclose(temp);
         return 1;
     }
+
     if (fclose(temp) != 0) {
         return 1;
     }
-    
+
     if (replace_file(temp_path, path) != 0) {
         return 1;
     }
