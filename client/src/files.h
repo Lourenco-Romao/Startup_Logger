@@ -9,5 +9,6 @@ typedef enum {
 } EventFormat;
 
 int write_event(const char *path, const LogEvent *event, EventFormat format);
+int process_pending_events(const char *path);
 
 #endif

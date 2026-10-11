@@ -3,6 +3,7 @@
 #include <inttypes.h>
 
 #include "files.h"
+#include "api.h"
 
 int write_event(const char *path, const LogEvent *event, EventFormat format) {
     if (path == NULL || event == NULL) {
@@ -70,6 +71,44 @@ int write_event(const char *path, const LogEvent *event, EventFormat format) {
     if (fclose(file) != 0) {
         return 1;
     }
+
+    return 0;
+}
+
+int process_pending_events(const char *path)
+{
+    if (path == NULL) {
+        return 1;
+    }
+
+    FILE *file = fopen(path, "r");
+
+    if (file == NULL) {
+        // Se ainda não existe pending.log, não há nada para enviar
+        return 0;
+    }
+
+    char line[512];
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+
+        if (send_json(line) != 0) {
+            fclose(file);
+            return 1;
+        }
+    }
+
+    fclose(file);
+
+    // Todos os eventos foram enviados com sucesso.
+    // Esvaziar o pending.log.
+    file = fopen(path, "w");
+
+    if (file == NULL) {
+        return 1;
+    }
+
+    fclose(file);
 
     return 0;
 }

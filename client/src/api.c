@@ -13,13 +13,7 @@
 
 int send_startup_event(const LogEvent *event)
 {
-    CURL *curl = NULL;
-    struct curl_slist *headers = NULL;
-
     char json[512];
-
-    CURLcode result;
-    long status_code;
 
     int written = snprintf(
         json,
@@ -40,10 +34,25 @@ int send_startup_event(const LogEvent *event)
         return -1;
     }
 
+    return send_json(json);
+}
+
+int send_json(const char *json)
+{
+    if (json == NULL) {
+        return 1;
+    }
+
+    CURL *curl = NULL;
+    struct curl_slist *headers = NULL;
+
+    CURLcode result;
+    long status_code;
+
     curl = curl_easy_init();
 
     if (curl == NULL) {
-        return -1;
+        return 1;
     }
 
     headers = curl_slist_append(
@@ -53,7 +62,7 @@ int send_startup_event(const LogEvent *event)
 
     if (headers == NULL) {
         curl_easy_cleanup(curl);
-        return -1;
+        return 1;
     }
 
     curl_easy_setopt(curl, CURLOPT_URL, EVENTS_ENDPOINT);
@@ -72,7 +81,7 @@ int send_startup_event(const LogEvent *event)
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
-        return -1;
+        return 1;
     }
 
     curl_easy_getinfo(
@@ -91,7 +100,7 @@ int send_startup_event(const LogEvent *event)
             status_code
         );
 
-        return -1;
+        return 1;
     }
 
     return 0;
