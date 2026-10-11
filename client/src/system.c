@@ -1,5 +1,9 @@
 #include <stdint.h>
 #include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "system.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -68,4 +72,59 @@ const char *get_operating_system(void)
 #else
     return "unknown";
 #endif
+}
+
+int get_app_data_path(const char *filename, char *buffer, size_t buffer_size) {
+    if (filename == NULL || buffer == NULL || buffer_size == 0) {
+        return -1;
+    }
+
+#ifdef _WIN32
+
+    // Get the Windows ProgramData directory
+    const char *program_data = getenv("ProgramData");
+
+    if (program_data == NULL) {
+        return -1;
+    }
+
+    char directory[MAX_PATH];
+
+    // Build the StartupLogger directory path
+    int written = snprintf(directory, sizeof(directory), "%s\\StartupLogger", program_data);
+
+    if (written < 0 || (size_t)written >= sizeof(directory)) {
+        return -1;
+    }
+
+    // Create the StartupLogger directory if it does not exist
+    if (!CreateDirectoryA(directory, NULL)) {
+
+        DWORD error = GetLastError();
+
+        // ERROR_ALREADY_EXISTS is not considered an error
+        if (error != ERROR_ALREADY_EXISTS) {
+            return -1;
+        }
+    }
+
+    // Build the full file path
+    written = snprintf(buffer, buffer_size, "%s\\%s", directory, filename);
+
+    if (written < 0 || (size_t)written >= buffer_size) {
+        return -1;
+    }
+
+#else
+
+    // On Linux, store the file in the current directory
+    int written = snprintf(buffer, buffer_size, "./%s", filename);
+
+    if (written < 0 || (size_t)written >= buffer_size) {
+        return -1;
+    }
+
+#endif
+
+    return 0;
 }

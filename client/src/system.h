@@ -2,6 +2,7 @@
 #define SYSTEM_H
 
 #include <time.h>
+#include <stdint.h>
 #include <stddef.h>
 
 #define MACHINE_NAME_SIZE 256
@@ -18,5 +19,7 @@ int get_machine_name(char *buffer, size_t size);
 const char *get_operating_system(void);
 
 int unix_to_local(int64_t timestamp, struct tm *utc_time);
+
+int get_app_data_path(const char *filename, char *buffer, size_t buffer_size);
 
 #endif // SYSTEM_H
