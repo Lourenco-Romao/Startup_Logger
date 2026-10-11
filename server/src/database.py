@@ -34,9 +34,9 @@ def init_database():
             event_type TEXT NOT NULL,
             timestamp INTEGER NOT NULL,
             received_at INTEGER NOT NULL,
-            os_id INTEGER NOT NULL,
+            id_os INTEGER NOT NULL,
 
-            FOREIGN KEY (os_id)
+            FOREIGN KEY (id_os)
                 REFERENCES os(id_os)
         )
     """)
@@ -75,7 +75,7 @@ def insert_event(event, received_at):
 
     cnx.execute(
         """
-        INSERT INTO events (hostname, event_type, timestamp, received_at, os_id)
+        INSERT INTO events (hostname, event_type, timestamp, received_at, id_os)
         VALUES (?, ?, ?, ?, ?)
         """,
         (
@@ -103,7 +103,7 @@ def get_events(os_name=None, hostname=None, event_type=None, from_timestamp=None
             events.received_at AS receivedAt,
             os.name AS os
         FROM events
-        JOIN os ON events.os_id = os.id_os
+        JOIN os ON events.id_os = os.id_os
         WHERE 1=1
         """
     params = []
@@ -134,3 +134,4 @@ def get_events(os_name=None, hostname=None, event_type=None, from_timestamp=None
     cnx.close()
 
     return [dict(row) for row in events]
+
