@@ -42,7 +42,7 @@ int write_event(const char *path, const LogEvent *event, EventFormat format) {
 
         struct tm utc_time;
 
-        if (unix_to_utc(event->timestamp, &utc_time) != 0) {
+        if (unix_to_local(event->timestamp, &utc_time) != 0) {
             fprintf(stderr, "Erro ao converter timestamp\n");
             fclose(file);
             return 1;

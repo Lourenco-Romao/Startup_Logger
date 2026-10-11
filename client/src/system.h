@@ -17,6 +17,6 @@ int get_machine_name(char *buffer, size_t size);
 
 const char *get_operating_system(void);
 
-int unix_to_utc(int64_t timestamp, struct tm *utc_time);
+int unix_to_local(int64_t timestamp, struct tm *utc_time);
 
 #endif // SYSTEM_H

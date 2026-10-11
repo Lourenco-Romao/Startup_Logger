@@ -30,9 +30,9 @@ int get_machine_name(char *buffer, size_t size)
     return 0;
 }
 
-int unix_to_utc(int64_t timestamp, struct tm *utc_time)
+int unix_to_local(int64_t timestamp, struct tm *local_time)
 {
-    if (utc_time == NULL) {
+    if (local_time == NULL) {
         return -1;
     }
 
@@ -40,13 +40,13 @@ int unix_to_utc(int64_t timestamp, struct tm *utc_time)
 
 #ifdef _WIN32
 
-    if (gmtime_s(utc_time, &time) != 0) {
+    if (localtime_s(local_time, &time) != 0) {
         return -1;
     }
 
 #else
 
-    if (gmtime_r(&time, utc_time) == NULL) {
+    if (localtime_r(&time, local_time) == NULL) {
         return -1;
     }
 
