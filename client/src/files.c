@@ -5,6 +5,10 @@
 #include "files.h"
 #include "api.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 int write_event(const char *path, const LogEvent *event, EventFormat format) {
     if (path == NULL || event == NULL) {
         return 1;
@@ -71,6 +75,36 @@ int write_event(const char *path, const LogEvent *event, EventFormat format) {
     if (fclose(file) != 0) {
         return 1;
     }
+
+    return 0;
+}
+
+static int replace_file(const char *source, const char *destination)
+{
+#ifdef _WIN32
+
+    if (!MoveFileExA(
+        source,
+        destination,
+        MOVEFILE_REPLACE_EXISTING
+    )) {
+        fprintf(
+            stderr,
+            "Failed to replace file. Windows error: %lu\n",
+            GetLastError()
+        );
+
+        return 1;
+    }
+
+#else
+
+    if (rename(source, destination) != 0) {
+        perror("Failed to replace file");
+        return 1;
+    }
+
+#endif
 
     return 0;
 }
@@ -146,13 +180,7 @@ int process_pending_events(const char *path) {
         return 1;
     }
     
-    // Sustitute the pending file
-
-    if (remove(path) != 0) {
-        remove(temp_path);
-        return 1;
-    }
-    if (rename(temp_path, path) != 0) {
+    if (replace_file(temp_path, path) != 0) {
         return 1;
     }
 
