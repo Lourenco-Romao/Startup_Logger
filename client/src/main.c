@@ -30,6 +30,8 @@ int main(void)
         return 1;
     }
 
+    process_pending_events(PENDING_LOG_FILE);
+
     // Send the log event to the server
     if (send_startup_event(&event) != 0) {
         fprintf(stderr, "Erro ao enviar evento para API\n");

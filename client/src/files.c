@@ -75,40 +75,86 @@ int write_event(const char *path, const LogEvent *event, EventFormat format) {
     return 0;
 }
 
-int process_pending_events(const char *path)
-{
+int process_pending_events(const char *path) {
     if (path == NULL) {
         return 1;
     }
 
-    FILE *file = fopen(path, "r");
+    FILE *pending = fopen(path, "r");
 
-    if (file == NULL) {
-        // Se ainda não existe pending.log, não há nada para enviar
+    if (pending == NULL) {
+        // If pending.log doesnt exist, we dont have anyting to send
         return 0;
     }
 
-    char line[512];
+    char temp_path[512];
 
-    while (fgets(line, sizeof(line), file) != NULL) {
+    int written = snprintf(
+        temp_path,
+        sizeof(temp_path),
+        "%s.tmp",
+        path
+    );
 
-        if (send_json(line) != 0) {
-            fclose(file);
-            return 1;
-        }
-    }
-
-    fclose(file);
-
-    // Todos os eventos foram enviados com sucesso.
-    // Esvaziar o pending.log.
-    file = fopen(path, "w");
-
-    if (file == NULL) {
+    if (written < 0 || (size_t)written >= sizeof(temp_path)) {
+        fclose(pending);
         return 1;
     }
 
-    fclose(file);
+    FILE *temp = fopen(temp_path, "w");
 
-    return 0;
+    if (temp == NULL) {
+        fclose(pending);
+        return 1;
+    }
+
+    char line[512];
+    int send_failed = 0;
+
+    while (fgets(line, sizeof(line), pending) != NULL) {
+        /*
+         * If there was a error
+         * we wont try to send the rest.
+         */
+        if (send_failed) {
+            if (fputs(line, temp) == EOF) {
+                fclose(pending);
+                fclose(temp);
+                return 1;
+            }
+            continue;
+        }
+        if (send_json(line) != 0) {
+            send_failed = 1;
+            if (fputs(line, temp) == EOF) {
+                fclose(pending);
+                fclose(temp);
+                return 1;
+            }
+        }
+    }
+    if (ferror(pending)) {
+        fclose(pending);
+        fclose(temp);
+        return 1;
+    }
+    if (fclose(pending) != 0) {
+        fclose(temp);
+        return 1;
+    }
+    if (fclose(temp) != 0) {
+        return 1;
+    }
+    
+    // Sustitute the pending file
+
+    if (remove(path) != 0) {
+        remove(temp_path);
+        return 1;
+    }
+    if (rename(temp_path, path) != 0) {
+        return 1;
+    }
+
+    return send_failed ? 1 : 0;
 }
