@@ -8,7 +8,7 @@ CFLAGS += -DAPI_BASE_URL=\"$(API_BASE_URL)\"
 CURL_FLAGS = $(shell pkg-config --cflags --libs libcurl)
 
 TARGET = build/startup-logger
-SOURCES = src/main.c src/system.c src/api.c
+SOURCES = src/main.c src/system.c src/api.c src/files.c
 
 $(TARGET): $(SOURCES)
 	mkdir -p build

@@ -4,8 +4,10 @@
 
 #include "system.h"
 #include "api.h"
+#include "files.h"
 
-#define LOG_FILE "./bomdia.log"
+#define LOG_FILE "./events-logger.log"
+#define PENDING_LOG_FILE "./pending.log"
 
 int main(void)
 {
@@ -22,40 +24,18 @@ int main(void)
         return 1;
     }
 
-    // Convert the timestamp to UTC to 
-    struct tm utc_time;
-
-    if (unix_to_utc(event.timestamp, &utc_time) != 0) {
-        fprintf(stderr, "Erro ao converter timestamp\n");
-        return 1;
-    }
     // Store the log event in a file
 
-    FILE *file = fopen(LOG_FILE, "a");
-
-    if (file == NULL) {
+    if (write_event(LOG_FILE, &event, EVENT_FORMAT_LOG) != 0) {
         return 1;
     }
-
-    fprintf(
-        file,
-        "[%04d-%02d-%02d] [%02d:%02d:%02d] [%s] %s\n",
-        utc_time.tm_year + 1900,
-        utc_time.tm_mon + 1,
-        utc_time.tm_mday,
-        utc_time.tm_hour,
-        utc_time.tm_min,
-        utc_time.tm_sec,
-        event.hostname,
-        event.eventType
-    );
-
-    fclose(file);
 
     // Send the log event to the server
     if (send_startup_event(&event) != 0) {
         fprintf(stderr, "Erro ao enviar evento para API\n");
-        return 1;
+        if (write_event(PENDING_LOG_FILE, &event, EVENT_FORMAT_PENDING) != 0) {
+            return 1;
+        }
     }
 
     return 0;
