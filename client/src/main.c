@@ -42,15 +42,34 @@ int main(void)
         return 1;
     }
 
-    process_pending_events(pending_path);
-
-    // Send the log event to the server
-    if (send_startup_event(&event) != 0) {
-        fprintf(stderr, "Erro ao enviar evento para API\n");
-        if (write_event(pending_path, &event, EVENT_FORMAT_PENDING) != 0) {
-            return 1;
-        }
+    if (process_pending_events(pending_path) != 0) {
+        fprintf(stderr, "Failed to process pending events.\n");
     }
 
+    // Send the log event to the server
+    SendResult result = send_startup_event(&event);
+
+    switch (result) {
+        case SEND_OK:
+            printf("Startup event sent successfully.\n");
+            break;
+
+        case SEND_RETRY:
+            fprintf(stderr, "Temporary failure. Saving event for retry.\n");
+
+            if (write_event(
+                    pending_path,
+                    &event,
+                    EVENT_FORMAT_PENDING
+                ) != 0) {
+                fprintf(stderr, "Failed to save event to pending queue.\n");
+                return 1;
+            }
+            break;
+
+        case SEND_REJECTED:
+            fprintf(stderr, "Event rejected.\n");
+            break;
+    }
     return 0;
 }

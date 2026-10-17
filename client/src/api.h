@@ -9,7 +9,7 @@ typedef enum {
     SEND_REJECTED
 } SendResult;
 
-int send_startup_event(const LogEvent *event);
+SendResult send_startup_event(const LogEvent *event);
 SendResult send_json(const char *json);
 
 #endif

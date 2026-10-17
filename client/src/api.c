@@ -11,8 +11,15 @@
 
 #define EVENTS_ENDPOINT API_BASE_URL "/api/v1/events"
 
-int send_startup_event(const LogEvent *event)
+SendResult send_startup_event(const LogEvent *event)
 {
+
+    if (event == NULL) {
+        fprintf(stderr, "Invalid event: event is NULL\n");
+        return SEND_REJECTED;
+    }
+
+
     char json[512];
 
     int written = snprintf(
@@ -31,7 +38,7 @@ int send_startup_event(const LogEvent *event)
     );
 
     if (written < 0 || (size_t)written >= sizeof(json)) {
-        return -1;
+        return SEND_REJECTED;
     }
 
     return send_json(json);
@@ -40,7 +47,8 @@ int send_startup_event(const LogEvent *event)
 SendResult send_json(const char *json)
 {
     if (json == NULL) {
-        return SEND_RETRY;
+        fprintf(stderr, "Cannot send NULL JSON\n");
+        return SEND_REJECTED;
     }
 
     CURL *curl = NULL;
@@ -52,6 +60,7 @@ SendResult send_json(const char *json)
     curl = curl_easy_init();
 
     if (curl == NULL) {
+        fprintf(stderr, "Failed to initialize CURL\n");
         return SEND_RETRY;
     }
 
@@ -61,6 +70,7 @@ SendResult send_json(const char *json)
     );
 
     if (headers == NULL) {
+        fprintf(stderr, "Failed to allocate HTTP headers\n");
         curl_easy_cleanup(curl);
         return SEND_RETRY;
     }
