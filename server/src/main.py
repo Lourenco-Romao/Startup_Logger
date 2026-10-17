@@ -4,10 +4,40 @@ import time
 from validation import validate_event
 from database import insert_event, get_events
 
+import os
+import hmac
+from pathlib import Path
+from dotenv import load_dotenv
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+
+load_dotenv(ROOT_DIR / ".env")
+
+API_KEY = os.environ.get("API_KEY")
+
+if not API_KEY:
+    raise RuntimeError("API_KEY not defined")
+
+
+def require_api_key():
+    supplied_key = request.headers.get("X-API-Key", "")
+
+    if not hmac.compare_digest(supplied_key, API_KEY):
+        return jsonify({"error": "Invalid API key"}), 401
+
+    return None
+
 app = Flask(__name__)
 
 @app.route("/api/v1/events", methods=["POST"])
 def create_event():
+    #--------check api key---------------
+    auth_error = require_api_key()
+
+    if auth_error is not None:
+        return auth_error
+    #------------------------------------
+
     event = request.get_json(silent=True)
 
     received_at = int(time.time())
