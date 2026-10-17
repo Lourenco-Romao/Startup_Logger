@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdint.h>
+#include <curl/curl.h>
 
 #include "system.h"
 #include "api.h"
@@ -8,18 +9,26 @@
 
 int main(void)
 {
+    CURLcode resultCurl = curl_global_init(CURL_GLOBAL_DEFAULT);
+    if (resultCurl != CURLE_OK) {
+        fprintf(stderr, "Failed to initialize libcurl\n");
+        return 1; // Não inicializou; não há cleanup a fazer
+    }
+
     char log_path[512];
     char pending_path[512]; //the path of the file that holds the jsons pending to be sent to the api
 
         // Get the local event log path
     if (get_app_data_path("events-logger.log", log_path, sizeof(log_path)) != 0) {
         fprintf(stderr, "Failed to get event log path\n");
+        curl_global_cleanup();
         return 1;
     }
 
     // Get the pending events log path
     if (get_app_data_path("pending.log", pending_path, sizeof(pending_path)) != 0) {
         fprintf(stderr, "Failed to get pending log path\n");
+        curl_global_cleanup();
         return 1;
     }
 
@@ -33,12 +42,14 @@ int main(void)
 
     if (get_machine_name(event.hostname, sizeof(event.hostname)) != 0) {
         fprintf(stderr, "Erro ao obter o nome da maquina\n");
+        curl_global_cleanup();
         return 1;
     }
 
     // Store the log event in a file
 
     if (write_event(log_path, &event, EVENT_FORMAT_LOG) != 0) {
+        curl_global_cleanup();
         return 1;
     }
 
@@ -63,6 +74,7 @@ int main(void)
                     EVENT_FORMAT_PENDING
                 ) != 0) {
                 fprintf(stderr, "Failed to save event to pending queue.\n");
+                curl_global_cleanup();
                 return 1;
             }
             break;
@@ -71,5 +83,6 @@ int main(void)
             fprintf(stderr, "Event rejected.\n");
             break;
     }
+    curl_global_cleanup();
     return 0;
 }
