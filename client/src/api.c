@@ -109,19 +109,23 @@ SendResult send_json(const char *json)
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
 
-    if (status_code == 201) {
-        return SEND_OK;
-    }
-
-    if (status_code >= 400 && status_code < 500) {
+    if (status_code == 400 || status_code == 422) {
         fprintf(
             stderr,
             "Event rejected by API: HTTP %ld\n",
             status_code
         );
-
         return SEND_REJECTED;
     }
 
+    if (status_code == 201) {
+        return SEND_OK;
+    }
+
+    fprintf(
+        stderr,
+        "Unexpected API response: HTTP %ld\n",
+        status_code
+    );
     return SEND_RETRY;
 }
