@@ -4,6 +4,7 @@ CC = gcc
 
 CFLAGS = -Wall -Wextra
 CFLAGS += -DAPI_BASE_URL=\"$(API_BASE_URL)\"
+CFLAGS += -DAPI_KEY=\"${API_KEY}\"
 
 CURL_FLAGS = $(shell pkg-config --cflags --libs libcurl)
 

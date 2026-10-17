@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include <curl/curl.h>
 
 #include "api.h"
@@ -10,6 +13,10 @@
 #endif
 
 #define EVENTS_ENDPOINT API_BASE_URL "/api/v1/events"
+
+#ifndef API_KEY
+#define API_KEY NULL
+#endif
 
 SendResult send_startup_event(const LogEvent *event)
 {
@@ -50,6 +57,14 @@ SendResult send_json(const char *json)
         fprintf(stderr, "Cannot send NULL JSON\n");
         return SEND_REJECTED;
     }
+    //----------- get api key --------------------------
+    const char *api_key = API_KEY;
+
+    if (api_key == NULL || api_key[0] == '\0') {
+        fprintf(stderr, "API key is not configured\n");
+        return SEND_RETRY;
+    }
+    //--------------------------------------------------
 
     CURL *curl = NULL;
     struct curl_slist *headers = NULL;
@@ -69,8 +84,33 @@ SendResult send_json(const char *json)
         "Content-Type: application/json"
     );
 
-    if (headers == NULL) {
-        fprintf(stderr, "Failed to allocate HTTP headers\n");
+    if (headers != NULL) {
+        size_t header_size = strlen(api_key) + sizeof("X-API-Key: ");
+        char *auth_header = malloc(header_size);
+
+        if (auth_header != NULL) {
+            snprintf(auth_header, header_size, "X-API-Key: %s", api_key);
+
+            struct curl_slist *updated = curl_slist_append(
+                headers,
+                auth_header
+            );
+
+            free(auth_header);
+
+            if (updated != NULL) {
+                headers = updated;
+            } else {
+                curl_slist_free_all(headers);
+                curl_easy_cleanup(curl);
+                return SEND_RETRY;
+            }
+        } else {
+            curl_slist_free_all(headers);
+            curl_easy_cleanup(curl);
+            return SEND_RETRY;
+        }
+    } else {
         curl_easy_cleanup(curl);
         return SEND_RETRY;
     }
