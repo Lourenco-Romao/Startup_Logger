@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <errno.h>
+#include <string.h>
 
 #include "files.h"
 #include "api.h"
@@ -10,9 +12,9 @@
 #endif
 
 int write_event(const char *path, const LogEvent *event, EventFormat format) {
-    if (path == NULL || event == NULL) {
-        return 1;
-    }
+    if (path == NULL || event == NULL || event->hostname[0] == '\0' || event->eventType == NULL || event->os == NULL) {
+    return 1;
+}
 
     if (format != EVENT_FORMAT_LOG && format != EVENT_FORMAT_PENDING) {
         return 1;
@@ -117,8 +119,13 @@ int process_pending_events(const char *path) {
     FILE *pending = fopen(path, "r");
 
     if (pending == NULL) {
-        // If pending.log doesn't exist, there is nothing to send
-        return 0;
+        if (errno == ENOENT) {
+            /* There is nothing to send . */
+            return 0;
+        }
+
+        perror("Failed to open pending events file");
+        return 1;
     }
 
     char temp_path[512];
@@ -142,10 +149,25 @@ int process_pending_events(const char *path) {
         return 1;
     }
 
-    char line[512];
+    char line[4096];
     int send_failed = 0;
+    int file_error = 0;
 
     while (fgets(line, sizeof(line), pending) != NULL) {
+        if (strchr(line, '\n') == NULL) {
+            int next_char = fgetc(pending);
+
+            if (next_char != EOF || !feof(pending)) {
+                fprintf(stderr,
+                        "Pending event exceeds maximum line size.\n");
+            } else {
+                fprintf(stderr,
+                        "Incomplete final line in pending events file.\n");
+            }
+
+            file_error = 1;
+            break;
+        }
         /*
          * If a temporary error already occurred,
          * keep the remaining events without trying to send them.
@@ -192,6 +214,12 @@ int process_pending_events(const char *path) {
                 return 1;
             }
         }
+    }
+    if (file_error) {
+        fclose(pending);
+        fclose(temp);
+        remove(temp_path);
+        return 1;
     }
 
     if (ferror(pending)) {
